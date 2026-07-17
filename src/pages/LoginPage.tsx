@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 
+type Mode = 'login' | 'signup'
+
 export function LoginPage() {
+  const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -12,21 +15,34 @@ export function LoginPage() {
     if (busy) return
     setBusy(true)
     setError(null)
-    const { error: err } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: window.location.origin },
-    })
+
+    const credentials = { email: email.trim(), password }
+    const { error: err } =
+      mode === 'login'
+        ? await supabase.auth.signInWithPassword(credentials)
+        : await supabase.auth.signUp(credentials)
+
     setBusy(false)
     if (err) {
-      setError(
-        err.status === 429
-          ? 'Demasiados intentos seguidos. Por seguridad, espera unos 10 minutos y vuelve a intentarlo.'
-          : 'No se pudo enviar el enlace. Inténtalo de nuevo.'
-      )
-      return
+      if (err.message.includes('Invalid login credentials')) {
+        setError(
+          'Email o contraseña incorrectos. Si es tu primera vez, usa "Crear mi contraseña".'
+        )
+      } else if (err.message.includes('already registered')) {
+        setError('Ese email ya tiene contraseña: usa "Ya tengo contraseña".')
+      } else if (err.message.includes('at least 6')) {
+        setError('La contraseña debe tener al menos 6 caracteres.')
+      } else if (err.status === 429) {
+        setError('Demasiados intentos seguidos. Espera unos minutos.')
+      } else {
+        setError('No se pudo iniciar sesión. Inténtalo de nuevo.')
+      }
     }
-    setSent(true)
+    // con sesión creada, onAuthStateChange se encarga del resto
   }
+
+  const inputCls =
+    'rounded-[12px] border border-edge bg-page px-4 py-3 text-center text-[15px] outline-none focus:border-euca'
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 pb-safe pt-safe">
@@ -41,36 +57,52 @@ export function LoginPage() {
           Todo listo para la llegada del bebé
         </p>
 
-        {sent ? (
-          <div className="mt-6 rounded-[12px] bg-euca-soft px-4 py-5">
-            <p className="text-2xl">📬</p>
-            <p className="mt-2 font-semibold">Te hemos enviado un enlace</p>
-            <p className="mt-1 text-sm text-soft">
-              Abre el correo en este dispositivo y toca el enlace para entrar.
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              inputMode="email"
-              placeholder="tu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-[12px] border border-edge bg-page px-4 py-3 text-center text-[15px] outline-none focus:border-euca"
-            />
-            <button
-              type="submit"
-              disabled={busy || !email.trim()}
-              className="rounded-[12px] bg-euca py-3 text-[15px] font-semibold text-white transition-opacity disabled:opacity-40"
-            >
-              {busy ? 'Enviando…' : 'Enviarme el enlace'}
-            </button>
-            {error && <p className="text-sm text-honey">{error}</p>}
-          </form>
-        )}
+        <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            placeholder="tu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={inputCls}
+          />
+          <input
+            type="password"
+            required
+            minLength={6}
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            placeholder={mode === 'login' ? 'Contraseña' : 'Elige una contraseña (mín. 6)'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={inputCls}
+          />
+          <button
+            type="submit"
+            disabled={busy || !email.trim() || !password}
+            className="rounded-[12px] bg-euca py-3 text-[15px] font-semibold text-white transition-opacity disabled:opacity-40"
+          >
+            {busy
+              ? 'Un momento…'
+              : mode === 'login'
+                ? 'Entrar'
+                : 'Crear cuenta y entrar'}
+          </button>
+          {error && <p className="text-sm text-honey">{error}</p>}
+        </form>
+
+        <button
+          onClick={() => {
+            setMode((m) => (m === 'login' ? 'signup' : 'login'))
+            setError(null)
+          }}
+          className="mt-4 text-xs font-semibold text-soft underline decoration-edge underline-offset-2"
+        >
+          {mode === 'login'
+            ? '¿Primera vez? Crear mi contraseña'
+            : 'Ya tengo contraseña'}
+        </button>
       </div>
     </main>
   )

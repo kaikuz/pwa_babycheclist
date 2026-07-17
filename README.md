@@ -4,7 +4,7 @@ PWA privada para dos personas para organizar la llegada del bebé: checklist
 compartida en tiempo real y carpeta de documentos (plan de parto, informes…).
 
 - **Frontend:** Vite + React + TypeScript + Tailwind CSS
-- **Backend:** Supabase (Auth con magic link, Postgres, Storage, Realtime)
+- **Backend:** Supabase (Auth con email+contraseña, Postgres, Storage, Realtime)
 - **Hosting:** Vercel
 
 ---
@@ -48,16 +48,22 @@ la checklist precargada.
 Solo esos dos emails podrán entrar. Cualquier otra persona verá
 "Esta app es privada".
 
-### 4. Configura el login por enlace mágico
+### 4. Configura el login (email + contraseña, sin correos)
 
-1. Ve a **Authentication → Sign In / Providers** y comprueba que **Email**
-   está activado (viene activado de serie). Desactiva cualquier otro proveedor.
-2. Ve a **Authentication → URL Configuration**:
-   - En **Site URL** pon la URL que te dará Vercel en el paso 6
-     (p. ej. `https://camino-a-casa.vercel.app`).
-   - En **Redirect URLs** añade esa misma URL.
-   - Si quieres probar en tu ordenador antes, añade también
-     `http://localhost:5173`.
+1. Ve a **Authentication → Sign In / Providers** → **Email** y déjalo así:
+   - **Enable Email provider**: activado.
+   - **Confirm email**: DESACTIVADO. Esto es lo importante: así crear la
+     contraseña es instantáneo y la app no envía ningún correo (ni hay
+     límites de envío que esperar).
+   - Desactiva cualquier otro proveedor.
+2. Si ya habíais entrado antes con enlace mágico: ve a
+   **Authentication → Users** y borra esos usuarios antiguos. Así cada uno
+   puede volver a registrarse desde la app, esta vez eligiendo contraseña
+   (botón "¿Primera vez? Crear mi contraseña" en la pantalla de entrada).
+
+Aunque cualquiera podría crearse una cuenta, no le serviría de nada: si su
+email no está en `allowed_users`, verá "Esta app es privada" y las reglas
+de la base de datos le impiden leer o escribir cualquier dato.
 
 ### 5. Comprueba el bucket de documentos
 
@@ -92,8 +98,7 @@ create policy "docs: allowlist delete"
    - `VITE_SUPABASE_URL` → la Project URL
    - `VITE_SUPABASE_ANON_KEY` → la anon public key
 4. Pulsa **Deploy**. Al terminar tendrás tu URL (p. ej.
-   `https://camino-a-casa.vercel.app`). Vuelve al paso 4 y ponla en Supabase si
-   no lo hiciste ya.
+   `https://camino-a-casa.vercel.app`).
 
 ### 7. Instálala en el iPhone
 
@@ -101,8 +106,10 @@ create policy "docs: allowlist delete"
 2. Toca el botón **Compartir** (el cuadrado con la flecha).
 3. Toca **Añadir a pantalla de inicio**.
 
-Ya tienes "Camino a casa" como una app más, a pantalla completa. Para entrar,
-escribe tu email y toca el enlace que te llega al correo.
+Ya tienes "Camino a casa" como una app más, a pantalla completa. La primera
+vez, entra con tu email y crea tu contraseña con el botón "¿Primera vez?
+Crear mi contraseña"; después la sesión queda guardada y no tendrás que
+volver a escribirla casi nunca.
 
 ### 8. Sube el plan de parto
 
@@ -139,7 +146,8 @@ supabase/migrations/
 
 ## Cómo funciona la privacidad
 
-- Login sin contraseñas: Supabase envía un enlace mágico al email.
+- Login con email y contraseña de Supabase Auth (sin correos de
+  verificación; la sesión persiste en el dispositivo).
 - La tabla `allowed_users` contiene los dos emails permitidos.
 - **Row Level Security**: todas las políticas de lectura/escritura (tablas y
   Storage) exigen que el email del token JWT esté en `allowed_users`. Aunque

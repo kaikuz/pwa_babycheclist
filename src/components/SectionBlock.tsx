@@ -41,6 +41,14 @@ export function SectionBlock({
             style={{ width: total > 0 ? `${(done / total) * 100}%` : 0 }}
           />
         </div>
+        {section.id === 'mama' && (
+          <p className="mt-2 text-xs leading-snug text-soft">
+            La pauta de cuándo y cómo tomar la tensión la marca tu matrona u
+            obstetra. Ante una cifra ≥ 140/90, dolor de cabeza intenso,
+            alteraciones de la visión o dolor en la parte alta del abdomen,
+            contacta de inmediato con urgencias de obstetricia o llama al 112.
+          </p>
+        )}
       </header>
       <ul className="divide-y divide-edge">
         {items.map((item) => (

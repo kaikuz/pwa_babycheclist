@@ -162,9 +162,17 @@ export function ChecklistPage() {
 
       <AddItemForm sections={data.sections} onAdd={addItem} />
 
-      <p className="px-2 text-center text-[11px] text-soft">
-        Precios orientativos (España, jul. 2026); varían según tienda y ofertas.
-      </p>
+      <div className="space-y-1 px-2 text-center text-[11px] text-soft">
+        <p>
+          Maleta del hospital lista para la semana 34-35. Si el bebé se
+          adelantara, la ropa de talla prematuro se compra en el momento: no
+          la compres por adelantado.
+        </p>
+        <p>
+          Precios orientativos (España, jul. 2026); varían según tienda y
+          ofertas.
+        </p>
+      </div>
     </div>
   )
 }

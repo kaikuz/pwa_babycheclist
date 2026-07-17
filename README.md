@@ -21,15 +21,24 @@ compartida en tiempo real y carpeta de documentos (plan de parto, informes…).
    - **Project URL** (algo como `https://xxxx.supabase.co`)
    - **anon public key** (una clave larga)
 
-### 2. Ejecuta las dos migraciones
+### 2. Ejecuta las migraciones
 
 1. En el menú lateral de Supabase, abre **SQL Editor**.
-2. Abre el archivo `supabase/migrations/001_init.sql` de este repositorio,
-   copia TODO su contenido, pégalo en el editor y pulsa **Run**.
-3. Repite lo mismo con `supabase/migrations/002_seed.sql`.
+2. Abre cada archivo de `supabase/migrations/` **en orden numérico**
+   (`001_init.sql`, `002_seed.sql`, `003_...sql`, y los que se vayan
+   añadiendo), copia TODO su contenido, pégalo en el editor y pulsa **Run**.
 
 Con esto ya tienes las tablas, la seguridad (RLS), el bucket de documentos y
 la lista de la canastilla precargada.
+
+> **Si el proyecto ya está en uso** (segunda o siguiente vez que tocas
+> Supabase): no hace falta repetir `001` ni `002`. Basta con ejecutar
+> **solo** la migración nueva que no hayas aplicado todavía (por ejemplo
+> `003_high_risk_updates.sql`). Cada migración nueva está pensada para
+> sumarse a los datos existentes sin borrar ni renombrar nada — vuestros
+> ítems marcados (`item_checks`) y los ítems propios que hayáis añadido no
+> se tocan. Si dudas de si ya la ejecutaste, no pasa nada: están escritas
+> para poder correrse dos veces sin duplicar datos.
 
 ### 3. Añade vuestros dos emails
 

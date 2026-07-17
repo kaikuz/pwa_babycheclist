@@ -1,91 +1,76 @@
-// Genera los iconos PNG de la PWA sin dependencias: fondo eucalipto con una
-// "C" dibujada como anillo con abertura. Ejecutar con `npm run icons`.
-import { deflateSync } from 'node:zlib'
-import { writeFileSync, mkdirSync } from 'node:fs'
+// Genera los iconos de la PWA a partir de public/logo.PNG (el badge ilustrado
+// de perro+bebé). Recorta solo la escena (sin el texto "Camino a casa /
+// Lycka y Hugo", ilegible en tamaños pequeños) y la compone centrada sobre
+// un lienzo cuadrado del mismo crema del badge. Ejecutar con `npm run icons`.
+//
+// Las coordenadas de recorte están ajustadas a mano para este archivo
+// concreto; si se sustituye logo.PNG por otra ilustración con distinta
+// composición, hay que reajustarlas (ver candidatos de recorte comentados).
+import { PNG } from 'pngjs'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 
-const BG = [0x7c, 0x9a, 0x83] // eucalipto
-const FG = [0xf4, 0xf6, 0xf1] // salvia-lino
+const SOURCE = 'public/logo.PNG'
+const CROP = { x: 90, y: 140, w: 1100, h: 500 } // corazón + perro + bebé, sin texto
+const BG = [250, 241, 227] // crema interior del badge, muestreado del propio logo
 
-const crcTable = Array.from({ length: 256 }, (_, n) => {
-  let c = n
-  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
-  return c >>> 0
-})
+const src = PNG.sync.read(readFileSync(SOURCE))
 
-function crc32(buf) {
-  let c = 0xffffffff
-  for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8)
-  return (c ^ 0xffffffff) >>> 0
-}
-
-function chunk(type, data) {
-  const len = Buffer.alloc(4)
-  len.writeUInt32BE(data.length)
-  const body = Buffer.concat([Buffer.from(type, 'ascii'), data])
-  const crc = Buffer.alloc(4)
-  crc.writeUInt32BE(crc32(body))
-  return Buffer.concat([len, body, crc])
-}
-
-function png(size, pixelAt) {
-  const raw = Buffer.alloc(size * (size * 3 + 1))
-  for (let y = 0; y < size; y++) {
-    const row = y * (size * 3 + 1)
-    raw[row] = 0 // filtro none
-    for (let x = 0; x < size; x++) {
-      const [r, g, b] = pixelAt(x, y)
-      raw.writeUInt8(r, row + 1 + x * 3)
-      raw.writeUInt8(g, row + 2 + x * 3)
-      raw.writeUInt8(b, row + 3 + x * 3)
-    }
+function sampleBilinear(sx, sy) {
+  const x0 = Math.floor(sx), y0 = Math.floor(sy)
+  const x1 = Math.min(x0 + 1, src.width - 1)
+  const y1 = Math.min(y0 + 1, src.height - 1)
+  const fx = sx - x0, fy = sy - y0
+  const at = (x, y) => {
+    const i = (y * src.width + x) << 2
+    const r = src.data[i], g = src.data[i + 1], b = src.data[i + 2]
+    // el recorte rectangular pilla esquinas fuera del arco del badge
+    // (blanco puro, no el crema interior): las rellenamos para que no
+    // se note la costura
+    if (r > 248 && g > 248 && b > 248) return BG
+    return [r, g, b]
   }
-  const ihdr = Buffer.alloc(13)
-  ihdr.writeUInt32BE(size, 0)
-  ihdr.writeUInt32BE(size, 4)
-  ihdr[8] = 8 // bit depth
-  ihdr[9] = 2 // color RGB
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(raw, { level: 9 })),
-    chunk('IEND', Buffer.alloc(0)),
-  ])
+  const c00 = at(x0, y0), c10 = at(x1, y0), c01 = at(x0, y1), c11 = at(x1, y1)
+  const lerp = (a, b, t) => a + (b - a) * t
+  return [0, 1, 2].map((k) =>
+    Math.round(
+      lerp(lerp(c00[k], c10[k], fx), lerp(c01[k], c11[k], fx), fy)
+    )
+  )
 }
 
-// Cobertura de la "C" en un punto: anillo centrado con abertura a la derecha.
-function makeIcon(size, scale) {
-  const cx = size / 2
-  const cy = size / 2
-  const rOuter = size * 0.34 * scale
-  const rInner = size * 0.19 * scale
-  const gap = Math.PI / 3.4 // media abertura, en radianes
-
-  const inC = (x, y) => {
-    const dx = x - cx
-    const dy = y - cy
-    const r = Math.hypot(dx, dy)
-    if (r < rInner || r > rOuter) return false
-    return Math.abs(Math.atan2(dy, dx)) > gap
+/** Compone el recorte centrado en un lienzo cuadrado con margen, fondo crema. */
+function makeIcon(size, marginFraction) {
+  const out = new PNG({ width: size, height: size })
+  for (let i = 0; i < out.data.length; i += 4) {
+    out.data[i] = BG[0]; out.data[i + 1] = BG[1]; out.data[i + 2] = BG[2]; out.data[i + 3] = 255
   }
 
-  return png(size, (x, y) => {
-    // antialiasing con 4 submuestras por píxel
-    let hits = 0
-    for (const [ox, oy] of [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
-      if (inC(x + ox, y + oy)) hits++
+  const contentSize = size * (1 - 2 * marginFraction)
+  const scale = Math.min(contentSize / CROP.w, contentSize / CROP.h)
+  const destW = CROP.w * scale, destH = CROP.h * scale
+  const offX = (size - destW) / 2, offY = (size - destH) / 2
+
+  for (let dy = 0; dy < destH; dy++) {
+    const py = Math.round(offY + dy)
+    if (py < 0 || py >= size) continue
+    for (let dx = 0; dx < destW; dx++) {
+      const px = Math.round(offX + dx)
+      if (px < 0 || px >= size) continue
+      const sx = CROP.x + dx / scale
+      const sy = CROP.y + dy / scale
+      const [r, g, b] = sampleBilinear(sx, sy)
+      const di = (py * size + px) << 2
+      out.data[di] = r; out.data[di + 1] = g; out.data[di + 2] = b; out.data[di + 3] = 255
     }
-    const t = hits / 4
-    return [
-      Math.round(BG[0] + (FG[0] - BG[0]) * t),
-      Math.round(BG[1] + (FG[1] - BG[1]) * t),
-      Math.round(BG[2] + (FG[2] - BG[2]) * t),
-    ]
-  })
+  }
+  return out
 }
 
 mkdirSync('public', { recursive: true })
-writeFileSync('public/icon-192.png', makeIcon(192, 1))
-writeFileSync('public/icon-512.png', makeIcon(512, 1))
-writeFileSync('public/apple-touch-icon.png', makeIcon(180, 1))
-writeFileSync('public/maskable-512.png', makeIcon(512, 0.78))
-console.log('Iconos generados en /public')
+writeFileSync('public/icon-192.png', PNG.sync.write(makeIcon(192, 0.08)))
+writeFileSync('public/icon-512.png', PNG.sync.write(makeIcon(512, 0.08)))
+writeFileSync('public/apple-touch-icon.png', PNG.sync.write(makeIcon(180, 0.08)))
+// más margen: el recorte tiene que caber en el círculo "seguro" del 80% central
+writeFileSync('public/maskable-512.png', PNG.sync.write(makeIcon(512, 0.18)))
+writeFileSync('public/favicon.png', PNG.sync.write(makeIcon(64, 0.06)))
+console.log('Iconos generados en /public a partir de logo.PNG')

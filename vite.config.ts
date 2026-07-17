@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
+      includeAssets: ['apple-touch-icon.png', 'favicon.png'],
       manifest: {
         name: 'Camino a casa',
         short_name: 'Camino a casa',

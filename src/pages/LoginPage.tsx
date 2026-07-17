@@ -31,9 +31,11 @@ export function LoginPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 pb-safe pt-safe">
       <div className="w-full max-w-sm rounded-card border border-edge bg-card p-6 text-center shadow-card">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] bg-euca font-display text-3xl font-semibold text-white">
-          C
-        </div>
+        <img
+          src="/icon-512.png"
+          alt=""
+          className="mx-auto h-20 w-20 rounded-[20px] border border-edge object-cover shadow-card"
+        />
         <h1 className="mt-4 font-display text-3xl font-semibold">Camino a casa</h1>
         <p className="mt-1 text-sm text-soft">
           Todo listo para la llegada del bebé

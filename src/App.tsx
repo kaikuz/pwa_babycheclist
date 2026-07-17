@@ -10,9 +10,11 @@ import { useToast } from './context/ToastContext'
 function Splash() {
   return (
     <main className="flex min-h-dvh items-center justify-center">
-      <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-[20px] bg-euca font-display text-3xl font-semibold text-white">
-        C
-      </div>
+      <img
+        src="/icon-512.png"
+        alt="Camino a casa"
+        className="h-16 w-16 animate-pulse rounded-[20px] border border-edge object-cover shadow-card"
+      />
     </main>
   )
 }

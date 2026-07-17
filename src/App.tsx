@@ -4,6 +4,7 @@ import { LoginPage } from './pages/LoginPage'
 import { PrivatePage } from './pages/PrivatePage'
 import { ChecklistPage } from './pages/ChecklistPage'
 import { DocumentsPage } from './pages/DocumentsPage'
+import { CalendarPage } from './pages/CalendarPage'
 import { TabBar, type Tab } from './components/TabBar'
 import { useToast } from './context/ToastContext'
 
@@ -43,7 +44,9 @@ export default function App() {
       </div>
       {/* pb deja hueco para la tab bar + safe area */}
       <main className="pb-[calc(72px+env(safe-area-inset-bottom))]">
-        {tab === 'lista' ? <ChecklistPage /> : <DocumentsPage />}
+        {tab === 'lista' && <ChecklistPage />}
+        {tab === 'calendario' && <CalendarPage />}
+        {tab === 'documentos' && <DocumentsPage />}
       </main>
       <TabBar tab={tab} onChange={setTab} />
     </div>

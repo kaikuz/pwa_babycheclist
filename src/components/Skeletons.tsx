@@ -18,3 +18,12 @@ export function DocumentsSkeleton() {
     </div>
   )
 }
+
+export function CalendarSkeleton() {
+  return (
+    <div className="space-y-4 px-4 pt-4">
+      <div className="skeleton h-9" />
+      <div className="skeleton h-72" />
+    </div>
+  )
+}

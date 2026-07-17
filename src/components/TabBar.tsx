@@ -1,4 +1,4 @@
-export type Tab = 'lista' | 'documentos'
+export type Tab = 'lista' | 'documentos' | 'calendario'
 
 interface Props {
   tab: Tab
@@ -7,6 +7,7 @@ interface Props {
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'lista', label: 'Lista', icon: '📝' },
+  { id: 'calendario', label: 'Calendario', icon: '📅' },
   { id: 'documentos', label: 'Documentos', icon: '📄' },
 ]
 

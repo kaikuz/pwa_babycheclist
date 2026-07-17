@@ -49,3 +49,37 @@ export interface DocumentRow {
 }
 
 export type Filter = 'all' | 'essential' | 'nice' | 'pending'
+
+// --- Calendario ---------------------------------------------------------
+
+export const RECURRENCES = ['none', 'daily', 'weekly'] as const
+export type Recurrence = (typeof RECURRENCES)[number]
+
+export const RECURRENCE_LABELS: Record<Recurrence, string> = {
+  none: 'No se repite',
+  daily: 'Diario',
+  weekly: 'Semanal',
+}
+
+export interface EventType {
+  id: string
+  name: string
+  color: string // hex del modo claro (el oscuro lo resuelve el cliente)
+  icon: string
+}
+
+export interface CalEvent {
+  id: string
+  type_id: string
+  title: string
+  notes: string | null
+  start_date: string // 'YYYY-MM-DD'
+  end_date: string | null // null = un solo día
+  all_day: boolean
+  time: string | null // 'HH:MM'
+  recurrence: Recurrence
+  recurrence_until: string | null
+  created_by: string
+  created_at: string
+  updated_at: string
+}

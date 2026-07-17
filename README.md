@@ -1,7 +1,8 @@
 # 🏡 Camino a casa
 
 PWA privada para dos personas para organizar la llegada del bebé: checklist
-compartida en tiempo real y carpeta de documentos (plan de parto, informes…).
+compartida en tiempo real, calendario de eventos (parto, citas, medicación,
+trámites) y carpeta de documentos (plan de parto, informes…).
 
 - **Frontend:** Vite + React + TypeScript + Tailwind CSS
 - **Backend:** Supabase (Auth con email+contraseña, Postgres, Storage, Realtime)
@@ -32,9 +33,10 @@ Con esto ya tienes las tablas, la seguridad (RLS), el bucket de documentos y
 la checklist precargada.
 
 > **Si el proyecto ya está en uso** (segunda o siguiente vez que tocas
-> Supabase): no hace falta repetir `001` ni `002`. Basta con ejecutar
-> **solo** la migración nueva que no hayas aplicado todavía (por ejemplo
-> `003_high_risk_updates.sql`). Cada migración nueva está pensada para
+> Supabase): no hace falta repetir las migraciones anteriores. Basta con
+> ejecutar **solo** la migración nueva que no hayas aplicado todavía (por
+> ejemplo `004_calendar.sql`, que añade el calendario de eventos). Cada
+> migración nueva está pensada para
 > sumarse a los datos existentes sin borrar ni renombrar nada — vuestros
 > ítems marcados (`item_checks`) y los ítems propios que hayáis añadido no
 > se tocan. Si dudas de si ya la ejecutaste, no pasa nada: están escritas

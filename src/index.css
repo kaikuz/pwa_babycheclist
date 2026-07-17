@@ -34,11 +34,21 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Comportamiento de app nativa: sin scroll ni rebote lateral, sin zoom por
+   doble toque (touch-action) y sin destello azul de iOS/Android al tocar. */
+html,
+body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
 body {
   @apply bg-page text-ink font-sans antialiased;
   background-image: radial-gradient(var(--c-dot) 1px, transparent 1px);
   background-size: 22px 22px;
   overscroll-behavior-y: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Safe areas de iOS (app instalada en pantalla de inicio) */

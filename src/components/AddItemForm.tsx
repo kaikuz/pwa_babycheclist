@@ -23,7 +23,8 @@ export function AddItemForm({ sections, onAdd }: Props) {
   }
 
   const inputCls =
-    'rounded-[12px] border border-edge bg-page px-3 py-2.5 text-[15px] outline-none focus:border-euca'
+    // text-base (16px): por debajo, iOS hace zoom automático al enfocar el campo
+    'rounded-[12px] border border-edge bg-page px-3 py-2.5 text-base outline-none focus:border-euca'
 
   return (
     <form

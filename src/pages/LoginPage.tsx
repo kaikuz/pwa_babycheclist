@@ -42,7 +42,8 @@ export function LoginPage() {
   }
 
   const inputCls =
-    'rounded-[12px] border border-edge bg-page px-4 py-3 text-center text-[15px] outline-none focus:border-euca'
+    // text-base (16px): por debajo, iOS hace zoom automático al enfocar el campo
+    'rounded-[12px] border border-edge bg-page px-4 py-3 text-center text-base outline-none focus:border-euca'
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 pb-safe pt-safe">

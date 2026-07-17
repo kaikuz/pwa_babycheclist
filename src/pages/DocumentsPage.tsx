@@ -52,7 +52,8 @@ export function DocumentsPage() {
   })).filter((g) => g.docs.length > 0)
 
   const inputCls =
-    'rounded-[12px] border border-edge bg-page px-3 py-2.5 text-[15px] outline-none focus:border-euca'
+    // text-base (16px): por debajo, iOS hace zoom automático al enfocar el campo
+    'rounded-[12px] border border-edge bg-page px-3 py-2.5 text-base outline-none focus:border-euca'
 
   return (
     <div className="space-y-4 px-4 pb-6 pt-4">

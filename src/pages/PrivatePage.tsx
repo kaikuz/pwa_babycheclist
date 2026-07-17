@@ -11,8 +11,8 @@ export function PrivatePage() {
           Esta app es privada
         </h1>
         <p className="mt-2 text-sm text-soft">
-          Canastilla es solo para dos personas. Tu email no está en la lista de
-          acceso.
+          Camino a casa es solo para dos personas. Tu email no está en la
+          lista de acceso.
         </p>
         <button
           onClick={() => void signOut()}

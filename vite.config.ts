@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
       manifest: {
-        name: 'Canastilla',
-        short_name: 'Canastilla',
+        name: 'Camino a casa',
+        short_name: 'Camino a casa',
         description: 'Checklist para la llegada del bebé',
         lang: 'es',
         display: 'standalone',

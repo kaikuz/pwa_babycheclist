@@ -18,7 +18,11 @@ export function LoginPage() {
     })
     setBusy(false)
     if (err) {
-      setError('No se pudo enviar el enlace. Inténtalo de nuevo.')
+      setError(
+        err.status === 429
+          ? 'Demasiados intentos seguidos. Por seguridad, espera unos 10 minutos y vuelve a intentarlo.'
+          : 'No se pudo enviar el enlace. Inténtalo de nuevo.'
+      )
       return
     }
     setSent(true)
@@ -30,7 +34,7 @@ export function LoginPage() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] bg-euca font-display text-3xl font-semibold text-white">
           C
         </div>
-        <h1 className="mt-4 font-display text-3xl font-semibold">Canastilla</h1>
+        <h1 className="mt-4 font-display text-3xl font-semibold">Camino a casa</h1>
         <p className="mt-1 text-sm text-soft">
           Todo listo para la llegada del bebé
         </p>

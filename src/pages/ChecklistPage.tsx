@@ -87,7 +87,7 @@ export function ChecklistPage() {
         <div className="flex items-center gap-4">
           <ProgressRing progress={stats.total > 0 ? stats.done / stats.total : 0} />
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-semibold">Canastilla</h1>
+            <h1 className="font-display text-2xl font-semibold">Camino a casa</h1>
             <p className="text-sm text-soft">
               {stats.done} de {stats.total} conseguidas
             </p>

@@ -1,4 +1,4 @@
-# 🍼 Canastilla
+# 🏡 Camino a casa
 
 PWA privada para dos personas para organizar la llegada del bebé: checklist
 compartida en tiempo real y carpeta de documentos (plan de parto, informes…).
@@ -14,7 +14,7 @@ compartida en tiempo real y carpeta de documentos (plan de parto, informes…).
 ### 1. Crea el proyecto de Supabase
 
 1. Entra en [supabase.com](https://supabase.com) y crea una cuenta gratuita.
-2. Pulsa **New project**, ponle nombre (p. ej. `canastilla`), elige una
+2. Pulsa **New project**, ponle nombre (p. ej. `camino-a-casa`), elige una
    contraseña de base de datos (guárdala) y la región de Europa.
 3. Cuando termine de crearse, ve a **Project Settings → API** y copia dos
    cosas que necesitarás luego:
@@ -29,7 +29,7 @@ compartida en tiempo real y carpeta de documentos (plan de parto, informes…).
    añadiendo), copia TODO su contenido, pégalo en el editor y pulsa **Run**.
 
 Con esto ya tienes las tablas, la seguridad (RLS), el bucket de documentos y
-la lista de la canastilla precargada.
+la checklist precargada.
 
 > **Si el proyecto ya está en uso** (segunda o siguiente vez que tocas
 > Supabase): no hace falta repetir `001` ni `002`. Basta con ejecutar
@@ -54,7 +54,7 @@ Solo esos dos emails podrán entrar. Cualquier otra persona verá
    está activado (viene activado de serie). Desactiva cualquier otro proveedor.
 2. Ve a **Authentication → URL Configuration**:
    - En **Site URL** pon la URL que te dará Vercel en el paso 6
-     (p. ej. `https://canastilla.vercel.app`).
+     (p. ej. `https://camino-a-casa.vercel.app`).
    - En **Redirect URLs** añade esa misma URL.
    - Si quieres probar en tu ordenador antes, añade también
      `http://localhost:5173`.
@@ -92,7 +92,7 @@ create policy "docs: allowlist delete"
    - `VITE_SUPABASE_URL` → la Project URL
    - `VITE_SUPABASE_ANON_KEY` → la anon public key
 4. Pulsa **Deploy**. Al terminar tendrás tu URL (p. ej.
-   `https://canastilla.vercel.app`). Vuelve al paso 4 y ponla en Supabase si
+   `https://camino-a-casa.vercel.app`). Vuelve al paso 4 y ponla en Supabase si
    no lo hiciste ya.
 
 ### 7. Instálala en el iPhone
@@ -101,7 +101,7 @@ create policy "docs: allowlist delete"
 2. Toca el botón **Compartir** (el cuadrado con la flecha).
 3. Toca **Añadir a pantalla de inicio**.
 
-Ya tienes "Canastilla" como una app más, a pantalla completa. Para entrar,
+Ya tienes "Camino a casa" como una app más, a pantalla completa. Para entrar,
 escribe tu email y toca el enlace que te llega al correo.
 
 ### 8. Sube el plan de parto

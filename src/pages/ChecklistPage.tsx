@@ -4,6 +4,7 @@ import { ProgressRing } from '../components/ProgressRing'
 import { SectionBlock } from '../components/SectionBlock'
 import { AddItemForm } from '../components/AddItemForm'
 import { ChecklistSkeleton } from '../components/Skeletons'
+import { ScrollTopButton } from '../components/ScrollTopButton'
 import type { Filter, Item } from '../lib/types'
 
 const FILTERS: { id: Filter; label: string }[] = [
@@ -173,6 +174,8 @@ export function ChecklistPage() {
           ofertas.
         </p>
       </div>
+
+      <ScrollTopButton />
     </div>
   )
 }

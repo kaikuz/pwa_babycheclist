@@ -14,19 +14,29 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 export function TabBar({ tab, onChange }: Props) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-card pb-safe">
-      <div className="mx-auto flex max-w-lg">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => onChange(t.id)}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-semibold transition-colors ${
-              tab === t.id ? 'text-euca' : 'text-soft'
-            }`}
-          >
-            <span className="text-xl leading-none">{t.icon}</span>
-            {t.label}
-          </button>
-        ))}
+      <div className="mx-auto flex max-w-lg px-2 pt-1.5">
+        {TABS.map((t) => {
+          const active = tab === t.id
+          return (
+            <button
+              key={t.id}
+              onClick={() => onChange(t.id)}
+              aria-current={active ? 'page' : undefined}
+              className={`flex flex-1 flex-col items-center gap-1 pb-1.5 text-xs font-semibold transition-colors ${
+                active ? 'text-euca' : 'text-soft'
+              }`}
+            >
+              <span
+                className={`flex h-8 w-16 items-center justify-center rounded-pill text-xl leading-none transition-colors ${
+                  active ? 'bg-euca-soft' : ''
+                }`}
+              >
+                {t.icon}
+              </span>
+              {t.label}
+            </button>
+          )
+        })}
       </div>
     </nav>
   )

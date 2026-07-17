@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-page: #f4f6f1;
+  --c-ink: #2e3a33;
+  --c-soft: #6b7a70;
+  --c-card: #ffffff;
+  --c-edge: #dde4dc;
+  --c-euca: #7c9a83;
+  --c-euca-soft: #e4ece5;
+  --c-honey: #c98f3d;
+  --c-honey-soft: #f5e8d4;
+  --c-dot: #dfe5dc;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-page: #161c18;
+    --c-ink: #e6ede8;
+    --c-soft: #9aab9f;
+    --c-card: #1e2721;
+    --c-edge: #32403a;
+    --c-euca: #8fb59a;
+    --c-euca-soft: #26332b;
+    --c-honey: #d9a45b;
+    --c-honey-soft: #37301f;
+    --c-dot: #1d2420;
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-page text-ink font-sans antialiased;
+  background-image: radial-gradient(var(--c-dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+  overscroll-behavior-y: none;
+}
+
+/* Safe areas de iOS (app instalada en pantalla de inicio) */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-toast {
+  animation: toast-in 0.18s ease-out;
+}
+
+@keyframes pulse-soft {
+  50% {
+    opacity: 0.55;
+  }
+}
+.skeleton {
+  @apply rounded-card bg-edge;
+  animation: pulse-soft 1.4s ease-in-out infinite;
+}

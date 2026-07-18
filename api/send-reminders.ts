@@ -45,14 +45,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const recipients = (usersRes.data as { email: string }[]).map((u) => u.email)
-  // En modo dry se puede forzar el día con ?date=YYYY-MM-DD para previsualizar
-  // cualquier fecha (p. ej. un domingo, con su resumen semanal). El override
-  // solo se aplica con ?dry, así que jamás puede alterar un envío real.
+  // ?date=YYYY-MM-DD fuerza el día, tanto para previsualizar (?dry) como para
+  // enviar una prueba real de otro día (p. ej. un domingo con su resumen).
+  // Es seguro: el cron programado en vercel.json nunca pasa este parámetro,
+  // así que solo se aplica cuando tú lo añades a mano en la URL.
   const dateParam = req.query.date
   const today =
-    req.query.dry &&
-    typeof dateParam === 'string' &&
-    /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+    typeof dateParam === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
       ? dateParam
       : madridTodayISO()
   // URL pública de la app para el logo del correo. Configurable con APP_URL;

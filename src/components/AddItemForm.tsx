@@ -1,25 +1,44 @@
 import { useState, type FormEvent } from 'react'
-import type { Section } from '../lib/types'
+import type { Product, Section } from '../lib/types'
 
 interface Props {
   sections: Section[]
-  onAdd: (name: string, sectionId: string, essential: boolean) => Promise<boolean>
+  onAdd: (
+    name: string,
+    sectionId: string,
+    essential: boolean,
+    product?: Product
+  ) => Promise<boolean>
 }
 
 export function AddItemForm({ sections, onAdd }: Props) {
   const [name, setName] = useState('')
   const [sectionId, setSectionId] = useState(sections[0]?.id ?? '')
   const [essential, setEssential] = useState(true)
+  const [withProduct, setWithProduct] = useState(false)
+  const [prodName, setProdName] = useState('')
+  const [prodPrice, setProdPrice] = useState('')
+  const [prodUrl, setProdUrl] = useState('')
   const [busy, setBusy] = useState(false)
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed || !sectionId || busy) return
+    const product: Product | undefined =
+      withProduct && prodName.trim()
+        ? { n: prodName.trim(), p: prodPrice.trim() || '—', u: prodUrl.trim() }
+        : undefined
     setBusy(true)
-    const ok = await onAdd(trimmed, sectionId, essential)
+    const ok = await onAdd(trimmed, sectionId, essential, product)
     setBusy(false)
-    if (ok) setName('')
+    if (ok) {
+      setName('')
+      setProdName('')
+      setProdPrice('')
+      setProdUrl('')
+      setWithProduct(false)
+    }
   }
 
   const inputCls =
@@ -63,6 +82,52 @@ export function AddItemForm({ sections, onAdd }: Props) {
             {essential ? 'Básico' : 'Nice'}
           </button>
         </div>
+
+        {withProduct ? (
+          <div className="space-y-2 rounded-[12px] border border-dashed border-edge p-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-soft">
+                Producto recomendado
+              </span>
+              <button
+                type="button"
+                onClick={() => setWithProduct(false)}
+                className="text-xs font-semibold text-soft"
+              >
+                Quitar
+              </button>
+            </div>
+            <input
+              value={prodName}
+              onChange={(e) => setProdName(e.target.value)}
+              placeholder="Nombre, p. ej. Suavinex pack 2"
+              className={`${inputCls} w-full`}
+            />
+            <input
+              value={prodPrice}
+              onChange={(e) => setProdPrice(e.target.value)}
+              placeholder="Precio orientativo, p. ej. 8-12 €"
+              className={`${inputCls} w-full`}
+            />
+            <input
+              value={prodUrl}
+              onChange={(e) => setProdUrl(e.target.value)}
+              type="url"
+              inputMode="url"
+              placeholder="Enlace (opcional)"
+              className={`${inputCls} w-full`}
+            />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setWithProduct(true)}
+            className="self-start text-xs font-semibold text-soft underline decoration-edge underline-offset-2"
+          >
+            + producto recomendado (opcional)
+          </button>
+        )}
+
         <button
           type="submit"
           disabled={!name.trim() || busy}

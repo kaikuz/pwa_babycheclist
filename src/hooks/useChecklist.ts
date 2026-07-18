@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import type { Item, ItemCheck, Section } from '../lib/types'
+import type { Item, ItemCheck, Product, Section } from '../lib/types'
 
 const CACHE_KEY = 'canastilla:checklist'
 
@@ -85,9 +85,12 @@ export function useChecklist() {
     }
   }, [load])
 
-  /** Marca/desmarca con optimistic UI; revierte si falla la red */
+  /**
+   * Marca/desmarca con optimistic UI; revierte si falla la red.
+   * `product`: nombre del producto elegido (null = "otro" o sin productos).
+   */
   const toggle = useCallback(
-    async (item: Item) => {
+    async (item: Item, product: string | null = null) => {
       const current = dataRef.current
       if (!current || !email) return
       const existing = current.checks[item.id]
@@ -121,11 +124,13 @@ export function useChecklist() {
           item_id: item.id,
           checked_by: email,
           checked_at: new Date().toISOString(),
+          product,
         })
         try {
           const { error } = await supabase.from('item_checks').insert({
             item_id: item.id,
             checked_by: email,
+            product,
           })
           if (error) throw error
         } catch {
@@ -138,13 +143,19 @@ export function useChecklist() {
   )
 
   const addItem = useCallback(
-    async (name: string, sectionId: string, essential: boolean) => {
+    async (
+      name: string,
+      sectionId: string,
+      essential: boolean,
+      product?: Product
+    ) => {
       if (!email) return false
       try {
         const { error } = await supabase.from('items').insert({
           section_id: sectionId,
           name,
           essential,
+          products: product ? [product] : [],
           is_custom: true,
           created_by: email,
           sort: 1000, // los custom van al final de su sección
@@ -159,6 +170,39 @@ export function useChecklist() {
       return true
     },
     [email, toast, load]
+  )
+
+  /** Añade una opción de producto a un ítem existente (optimistic). */
+  const addProduct = useCallback(
+    async (item: Item, product: Product) => {
+      const updated = [...item.products, product]
+      const patchItem = (products: Product[]) =>
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                items: d.items.map((i) =>
+                  i.id === item.id ? { ...i, products } : i
+                ),
+              }
+            : d
+        )
+      patchItem(updated)
+      try {
+        const { error } = await supabase
+          .from('items')
+          .update({ products: updated })
+          .eq('id', item.id)
+        if (error) throw error
+      } catch {
+        patchItem(item.products)
+        toast('No se pudo añadir la opción', 'error')
+        return false
+      }
+      toast('Opción añadida')
+      return true
+    },
+    [toast]
   )
 
   const deleteItem = useCallback(
@@ -176,5 +220,5 @@ export function useChecklist() {
     [toast, load]
   )
 
-  return { data, loading, stale, toggle, addItem, deleteItem }
+  return { data, loading, stale, toggle, addItem, addProduct, deleteItem }
 }

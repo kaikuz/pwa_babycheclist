@@ -27,6 +27,8 @@ export interface ItemCheck {
   item_id: string
   checked_by: string
   checked_at: string
+  /** producto elegido al marcar; null = "otro" o ítem sin productos */
+  product: string | null
 }
 
 export const DOC_CATEGORIES = ['parto', 'medico', 'tramites', 'general'] as const

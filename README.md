@@ -34,8 +34,9 @@ la checklist precargada.
 
 > **Si el proyecto ya está en uso** (segunda o siguiente vez que tocas
 > Supabase): no hace falta repetir las migraciones anteriores. Basta con
-> ejecutar **solo** la migración nueva que no hayas aplicado todavía (por
-> ejemplo `004_calendar.sql`, que añade el calendario de eventos). Cada
+> ejecutar **solo** las migraciones nuevas que no hayas aplicado todavía
+> (por ejemplo `005_check_product.sql`, que permite registrar qué producto
+> comprasteis al marcar un ítem). Cada
 > migración nueva está pensada para
 > sumarse a los datos existentes sin borrar ni renombrar nada — vuestros
 > ítems marcados (`item_checks`) y los ítems propios que hayáis añadido no

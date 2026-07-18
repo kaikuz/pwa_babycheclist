@@ -1,5 +1,5 @@
 import { ItemRow } from './ItemRow'
-import type { Item, ItemCheck, Section } from '../lib/types'
+import type { Item, ItemCheck, Product, Section } from '../lib/types'
 
 interface Props {
   section: Section
@@ -8,7 +8,8 @@ interface Props {
   /** progreso sobre TODOS los ítems de la sección (no solo los filtrados) */
   done: number
   total: number
-  onToggle: (item: Item) => void
+  onToggle: (item: Item, product?: string | null) => void
+  onAddProduct: (item: Item, product: Product) => Promise<boolean>
   onDelete: (item: Item) => void
 }
 
@@ -19,6 +20,7 @@ export function SectionBlock({
   done,
   total,
   onToggle,
+  onAddProduct,
   onDelete,
 }: Props) {
   return (
@@ -57,6 +59,7 @@ export function SectionBlock({
             item={item}
             check={checks[item.id]}
             onToggle={onToggle}
+            onAddProduct={onAddProduct}
             onDelete={onDelete}
           />
         ))}

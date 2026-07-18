@@ -45,7 +45,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const recipients = (usersRes.data as { email: string }[]).map((u) => u.email)
-  const today = madridTodayISO()
+  // En modo dry se puede forzar el día con ?date=YYYY-MM-DD para previsualizar
+  // cualquier fecha (p. ej. un domingo, con su resumen semanal). El override
+  // solo se aplica con ?dry, así que jamás puede alterar un envío real.
+  const dateParam = req.query.date
+  const today =
+    req.query.dry &&
+    typeof dateParam === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+      ? dateParam
+      : madridTodayISO()
   const email = buildReminderEmail(
     eventsRes.data as CalEvent[],
     typesRes.data as EventType[],
@@ -55,13 +64,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!email) {
     return res.status(200).json({ sent: false, reason: 'Sin eventos', today })
   }
-  if (recipients.length === 0) {
-    return res.status(200).json({ sent: false, reason: 'Sin destinatarios', today })
-  }
 
+  // El preview no necesita destinatarios: devuelve el HTML tal cual.
   if (req.query.dry) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     return res.status(200).send(email.html)
+  }
+
+  if (recipients.length === 0) {
+    return res.status(200).json({ sent: false, reason: 'Sin destinatarios', today })
   }
 
   const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {

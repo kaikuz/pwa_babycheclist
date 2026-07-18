@@ -6,7 +6,12 @@
 // igual que en la pestaña Calendario.
 // Imports con extensión .js (requisito de ESM en tiempo de ejecución en Vercel)
 import type { CalEvent, EventType } from '../src/lib/types.js'
-import { eventOccursOn, recurrenceCaption } from '../src/lib/events.js'
+import {
+  eventImageFile,
+  eventOccursOn,
+  recurrenceCaption,
+  WEEKLY_IMAGE_FILE,
+} from '../src/lib/events.js'
 import { addDaysISO, formatLong, parseISO } from '../src/lib/dates.js'
 
 export interface ReminderEmail {
@@ -61,7 +66,7 @@ export function buildReminderEmail(
   events: CalEvent[],
   types: EventType[],
   todayIso: string,
-  logoUrl = ''
+  baseUrl = ''
 ): ReminderEmail | null {
   const typeById = new Map(types.map((t) => [t.id, t]))
   const byTime = (a: CalEvent, b: CalEvent) =>
@@ -112,12 +117,40 @@ export function buildReminderEmail(
     }
   }
 
-  // Logo centrado en la cabecera. Se enlaza por URL absoluta (los correos no
-  // admiten imágenes locales ni base64 en Gmail); width/height fijos + estilos
-  // inline para que se vea igual en todos los clientes.
+  // Todas las imágenes se enlazan por URL absoluta bajo baseUrl (los correos
+  // no admiten imágenes locales ni base64 en Gmail).
+  const asset = (file: string) => (baseUrl ? `${baseUrl}/${file}` : '')
+
+  // Logo centrado en la cabecera; width/height fijos + estilos inline para que
+  // se vea igual en todos los clientes.
+  const logoUrl = asset('icon-192.png')
   const logo = logoUrl
     ? `<img src="${logoUrl}" width="76" height="76" alt="Camino a casa" style="width:76px;height:76px;border-radius:20px;display:inline-block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />`
     : ''
+
+  // Ilustraciones de cabecera (llevan su rótulo incrustado, se muestran
+  // completas). En el correo semanal (domingo con eventos de la semana), la del
+  // resumen semanal; en el diario, las de los tipos de hoy, una junto a otra.
+  const weekly = isSunday && weekCount > 0
+  let headerImages = ''
+  if (baseUrl && weekly) {
+    headerImages = `<div style="text-align:center;margin-bottom:16px;"><img src="${asset(WEEKLY_IMAGE_FILE)}" width="220" alt="Resumen semanal" style="width:220px;max-width:80%;height:auto;border-radius:18px;display:inline-block;border:0;" /></div>`
+  } else if (baseUrl) {
+    const shownTypes = types.filter((t) =>
+      todayEvents.some((e) => e.type_id === t.id)
+    )
+    if (shownTypes.length) {
+      headerImages =
+        `<div style="text-align:center;margin-bottom:16px;font-size:0;">` +
+        shownTypes
+          .map(
+            (t) =>
+              `<img src="${asset(eventImageFile(t.id))}" width="150" alt="${t.name}" style="width:150px;max-width:44%;height:auto;border-radius:16px;display:inline-block;margin:4px;border:0;" />`
+          )
+          .join('') +
+        `</div>`
+    }
+  }
 
   // Documento HTML completo: viewport para móvil y color-scheme "light" para
   // que el modo oscuro de algún cliente no invierta los colores del diseño.
@@ -138,6 +171,7 @@ export function buildReminderEmail(
         <div style="font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;color:#2e3a33;margin-top:10px;">Camino a casa</div>
         <div style="font-size:13px;color:#6b7a70;margin-top:2px;">Recordatorio del calendario</div>
       </div>
+      ${headerImages}
       ${body}
       <div style="margin-top:20px;font-size:11px;line-height:1.5;color:#6b7a70;text-align:center;">
         Correo automático diario a las 12h (11h en horario de invierno).<br />

@@ -19,6 +19,25 @@ export function eventColor(type: EventType | undefined, dark: boolean): string {
   return dark ? (DARK_COLORS[type.id] ?? type.color) : type.color
 }
 
+// Ilustración (en /public) asociada a cada tipo. Se usa en el detalle del
+// evento (app) y en la cabecera del correo. Las claves son los id de
+// event_types; nombres de archivo tal cual los subió el usuario.
+const TYPE_IMAGE: Record<string, string> = {
+  parto: 'parto.jpg',
+  cita: 'citas_medicas.jpg',
+  medicacion: 'medicacion-vacunas.jpg',
+  tramite: 'tramites.jpg',
+  otro: 'otros.jpg',
+}
+
+/** Nombre de archivo de la ilustración del tipo (fallback: 'otros.jpg'). */
+export function eventImageFile(typeId: string): string {
+  return TYPE_IMAGE[typeId] ?? 'otros.jpg'
+}
+
+/** Ilustración del resumen semanal (cabecera del correo de los domingos). */
+export const WEEKLY_IMAGE_FILE = 'resumen_semanal.jpg'
+
 /** ¿El evento cae en el día `iso`? Expande recurrencias sin crear filas. */
 export function eventOccursOn(ev: CalEvent, iso: string): boolean {
   if (ev.recurrence === 'none') {

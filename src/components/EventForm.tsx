@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { CalEvent, EventType, Recurrence } from '../lib/types'
 import { RECURRENCES, RECURRENCE_LABELS } from '../lib/types'
-import { eventColor } from '../lib/events'
+import { eventColor, eventImageFile } from '../lib/events'
 import type { EventInput } from '../hooks/useEvents'
 
 interface Props {
@@ -144,6 +144,14 @@ export function EventForm({
                 </button>
               )
             })}
+          </div>
+          {/* Ilustración del tipo seleccionado (solo en el detalle del evento) */}
+          <div className="mt-3 flex justify-center">
+            <img
+              src={`/${eventImageFile(typeId)}`}
+              alt={types.find((t) => t.id === typeId)?.name ?? ''}
+              className="h-40 w-40 rounded-[18px] border border-edge object-cover shadow-card"
+            />
           </div>
         </div>
 

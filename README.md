@@ -126,18 +126,28 @@ La app puede enviaros cada día, sobre las 12h, un correo con los eventos del
 calendario de ese día; los domingos añade además el resumen de la semana que
 viene. Si un día no hay eventos, no envía nada. Para activarlo:
 
-1. **Crea una cuenta gratuita en [brevo.com](https://www.brevo.com)** (el
-   servicio que envía los correos; su plan gratuito sobra para esto).
-   - En **Settings → Senders** añade y verifica tu email como remitente.
-   - En **Settings → SMTP & API → API Keys** crea una API key y cópiala.
+Los correos se envían desde **tu propia cuenta de Gmail** (Google→Gmail
+entrega muy bien y no hay límites de dominio compartido). Para ello se usa
+una **contraseña de aplicación** de Google, que es una clave de 16
+caracteres distinta de tu contraseña normal y que puedes revocar cuando
+quieras.
+
+1. **Crea una contraseña de aplicación de Google** (en la cuenta desde la
+   que quieres que salgan los correos):
+   - Activa la **verificación en 2 pasos** en
+     [myaccount.google.com/security](https://myaccount.google.com/security)
+     (es obligatoria para poder crear contraseñas de aplicación).
+   - Entra en [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords),
+     ponle un nombre (p. ej. "Camino a casa") y **copia la clave de 16
+     caracteres** que te genera.
 2. **En Supabase**: ve a **Project Settings → API** y copia la clave
    **`service_role`** (⚠️ esta clave es secreta: solo va en Vercel como
    variable de servidor, jamás en el código ni con prefijo `VITE_`).
 3. **En Vercel**: **Settings → Environment Variables** → añade estas cinco:
    - `SUPABASE_URL` → la misma Project URL de siempre
    - `SUPABASE_SERVICE_ROLE_KEY` → la clave del paso 2
-   - `BREVO_API_KEY` → la API key del paso 1
-   - `BREVO_SENDER_EMAIL` → el email que verificaste como remitente
+   - `GMAIL_USER` → tu dirección `@gmail.com`
+   - `GMAIL_APP_PASSWORD` → la clave de 16 caracteres del paso 1
    - `CRON_SECRET` → una contraseña larga cualquiera (protege el endpoint;
      puedes generarla en una web de contraseñas aleatorias)
 4. **Redeploy** (Deployments → ⋯ → Redeploy). El horario ya viene definido

@@ -1,16 +1,22 @@
 // Endpoint invocado por Vercel Cron (ver "crons" en vercel.json) cada día a
 // las 10:00 UTC (12:00 en Madrid en verano, 11:00 en invierno). Lee los
 // eventos con la service role key (solo servidor), compone el recordatorio
-// y lo envía por Brevo a los emails de allowed_users.
+// y lo envía por Gmail SMTP a los emails de allowed_users.
+//
+// Se envía desde Gmail (Google→Gmail entrega muy bien y evita el throttling
+// del dominio compartido de Brevo). Requiere una "contraseña de aplicación"
+// de Google (con verificación en 2 pasos activada).
 //
 // Variables de entorno necesarias (en Vercel, NUNCA con prefijo VITE_):
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, BREVO_API_KEY,
-//   BREVO_SENDER_EMAIL (remitente verificado en Brevo), CRON_SECRET
+//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET,
+//   GMAIL_USER (tu dirección @gmail.com),
+//   GMAIL_APP_PASSWORD (la contraseña de aplicación de 16 caracteres)
 //
 // Prueba manual sin enviar nada:
 //   curl -H "Authorization: Bearer $CRON_SECRET" "https://TU-APP.vercel.app/api/send-reminders?dry=1"
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
+import nodemailer from 'nodemailer'
 import type { CalEvent, EventType } from '../src/lib/types.js'
 // Imports con extensión .js: en ESM (package.json "type":"module") Node exige
 // la extensión en tiempo de ejecución, y Vercel transpila cada archivo sin
@@ -25,9 +31,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const url = process.env.SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const brevoKey = process.env.BREVO_API_KEY
-  const sender = process.env.BREVO_SENDER_EMAIL
-  if (!url || !serviceKey || !brevoKey || !sender) {
+  const gmailUser = process.env.GMAIL_USER
+  // Las app passwords de Google se muestran con espacios; los quitamos.
+  const gmailPass = (process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, '')
+  if (!url || !serviceKey || !gmailUser || !gmailPass) {
     return res.status(500).json({ error: 'Faltan variables de entorno' })
   }
 
@@ -78,22 +85,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ sent: false, reason: 'Sin destinatarios', today })
   }
 
-  const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'api-key': brevoKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      sender: { name: 'Camino a casa', email: sender },
-      to: recipients.map((e) => ({ email: e })),
-      subject: email.subject,
-      htmlContent: email.html,
-    }),
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: { user: gmailUser, pass: gmailPass },
   })
-  if (!brevoRes.ok) {
-    const detail = await brevoRes.text()
-    return res.status(502).json({ error: 'Brevo rechazó el envío', detail })
+
+  try {
+    await transporter.sendMail({
+      from: `"Camino a casa" <${gmailUser}>`,
+      to: recipients.join(', '),
+      subject: email.subject,
+      html: email.html,
+    })
+  } catch (err) {
+    return res.status(502).json({
+      error: 'Gmail rechazó el envío',
+      detail: err instanceof Error ? err.message : String(err),
+    })
   }
 
   return res.status(200).json({

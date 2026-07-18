@@ -155,6 +155,18 @@ curl -H "Authorization: Bearer TU_CRON_SECRET" \
 
 (`?dry=1` te enseña el correo sin enviarlo; sin él, lo envía de verdad.)
 
+Para previsualizar cómo quedaría un día concreto (por ejemplo un domingo,
+con su resumen semanal) añade `&date=AAAA-MM-DD`:
+
+```bash
+curl -H 'Authorization: Bearer TU_CRON_SECRET' \
+  'https://TU-APP.vercel.app/api/send-reminders?dry=1&date=2026-07-19'
+```
+
+El parámetro `date` solo se aplica junto a `dry`, así que nunca puede
+afectar a un envío real. Si ese día no hay ningún evento, la respuesta será
+`{"sent":false,"reason":"Sin eventos"}`.
+
 ---
 
 ## Desarrollo local

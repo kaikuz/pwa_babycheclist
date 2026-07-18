@@ -1,5 +1,7 @@
 import type { CalEvent, EventType } from './types'
-import { formatShort, parseISO } from './dates'
+// .js en el import: este módulo lo reutiliza la función serverless de
+// recordatorios (ESM en Vercel), que exige la extensión en tiempo de ejecución.
+import { formatShort, parseISO } from './dates.js'
 
 // Color de cada tipología en modo oscuro (en claro se usa event_types.color).
 // Para 'cita' y 'medicacion' son los mismos tokens eucalipto/miel del resto

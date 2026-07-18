@@ -11,8 +11,11 @@
 //   curl -H "Authorization: Bearer $CRON_SECRET" "https://TU-APP.vercel.app/api/send-reminders?dry=1"
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
-import type { CalEvent, EventType } from '../src/lib/types'
-import { buildReminderEmail, madridTodayISO } from '../server/reminders'
+import type { CalEvent, EventType } from '../src/lib/types.js'
+// Imports con extensión .js: en ESM (package.json "type":"module") Node exige
+// la extensión en tiempo de ejecución, y Vercel transpila cada archivo sin
+// bundlear. Sin ella, la función falla con ERR_MODULE_NOT_FOUND.
+import { buildReminderEmail, madridTodayISO } from '../server/reminders.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const secret = process.env.CRON_SECRET

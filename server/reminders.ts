@@ -4,9 +4,10 @@
 // Reutiliza eventOccursOn y las utilidades de fecha del cliente, de modo que
 // las recurrencias (diaria/semanal) y los rangos se expanden exactamente
 // igual que en la pestaña Calendario.
-import type { CalEvent, EventType } from '../src/lib/types'
-import { eventOccursOn, recurrenceCaption } from '../src/lib/events'
-import { addDaysISO, formatLong, parseISO } from '../src/lib/dates'
+// Imports con extensión .js (requisito de ESM en tiempo de ejecución en Vercel)
+import type { CalEvent, EventType } from '../src/lib/types.js'
+import { eventOccursOn, recurrenceCaption } from '../src/lib/events.js'
+import { addDaysISO, formatLong, parseISO } from '../src/lib/dates.js'
 
 export interface ReminderEmail {
   subject: string

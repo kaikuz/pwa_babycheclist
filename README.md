@@ -119,6 +119,41 @@ Entra en la pestaña **Documentos**, elige el PDF, ponle título "Plan de
 parto", categoría **Parto**, y súbelo. Desde ese momento cualquiera de los
 dos puede abrirlo desde el móvil en el paritorio. 🤱
 
+### 9. Recordatorios por email (opcional)
+
+La app puede enviaros cada día, sobre las 12h, un correo con los eventos del
+calendario de ese día; los domingos añade además el resumen de la semana que
+viene. Si un día no hay eventos, no envía nada. Para activarlo:
+
+1. **Crea una cuenta gratuita en [brevo.com](https://www.brevo.com)** (el
+   servicio que envía los correos; su plan gratuito sobra para esto).
+   - En **Settings → Senders** añade y verifica tu email como remitente.
+   - En **Settings → SMTP & API → API Keys** crea una API key y cópiala.
+2. **En Supabase**: ve a **Project Settings → API** y copia la clave
+   **`service_role`** (⚠️ esta clave es secreta: solo va en Vercel como
+   variable de servidor, jamás en el código ni con prefijo `VITE_`).
+3. **En Vercel**: **Settings → Environment Variables** → añade estas cinco:
+   - `SUPABASE_URL` → la misma Project URL de siempre
+   - `SUPABASE_SERVICE_ROLE_KEY` → la clave del paso 2
+   - `BREVO_API_KEY` → la API key del paso 1
+   - `BREVO_SENDER_EMAIL` → el email que verificaste como remitente
+   - `CRON_SECRET` → una contraseña larga cualquiera (protege el endpoint;
+     puedes generarla en una web de contraseñas aleatorias)
+4. **Redeploy** (Deployments → ⋯ → Redeploy). El horario ya viene definido
+   en `vercel.json`; Vercel lo registra solo.
+
+Notas: en el plan gratuito de Vercel el correo llega dentro de la hora
+siguiente a la programada, y el horario se define en UTC, así que llega
+sobre las 12h en horario de verano y sobre las 11h en invierno. Para probar
+que todo está bien sin esperar al cron:
+
+```bash
+curl -H "Authorization: Bearer TU_CRON_SECRET" \
+  "https://TU-APP.vercel.app/api/send-reminders?dry=1"
+```
+
+(`?dry=1` te enseña el correo sin enviarlo; sin él, lo envía de verdad.)
+
 ---
 
 ## Desarrollo local

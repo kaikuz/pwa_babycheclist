@@ -15,8 +15,17 @@ const FILTERS: { id: Filter; label: string }[] = [
 ]
 
 export function ChecklistPage() {
-  const { data, loading, stale, toggle, addItem, addProduct, deleteItem } =
-    useChecklist()
+  const {
+    data,
+    loading,
+    stale,
+    toggle,
+    addItem,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    deleteItem,
+  } = useChecklist()
   const [filter, setFilter] = useState<Filter>('all')
 
   const stats = useMemo(() => {
@@ -158,6 +167,8 @@ export function ChecklistPage() {
             total={st?.total ?? 0}
             onToggle={(i, product) => void toggle(i, product)}
             onAddProduct={addProduct}
+            onUpdateProduct={updateProduct}
+            onDeleteProduct={deleteProduct}
             onDelete={(i) => void deleteItem(i)}
           />
         )

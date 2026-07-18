@@ -10,6 +10,8 @@ interface Props {
   total: number
   onToggle: (item: Item, product?: string | null) => void
   onAddProduct: (item: Item, product: Product) => Promise<boolean>
+  onUpdateProduct: (item: Item, index: number, product: Product) => Promise<boolean>
+  onDeleteProduct: (item: Item, index: number) => Promise<boolean>
   onDelete: (item: Item) => void
 }
 
@@ -21,6 +23,8 @@ export function SectionBlock({
   total,
   onToggle,
   onAddProduct,
+  onUpdateProduct,
+  onDeleteProduct,
   onDelete,
 }: Props) {
   return (
@@ -60,6 +64,8 @@ export function SectionBlock({
             check={checks[item.id]}
             onToggle={onToggle}
             onAddProduct={onAddProduct}
+            onUpdateProduct={onUpdateProduct}
+            onDeleteProduct={onDeleteProduct}
             onDelete={onDelete}
           />
         ))}

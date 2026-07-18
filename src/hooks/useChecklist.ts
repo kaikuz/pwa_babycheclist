@@ -172,10 +172,12 @@ export function useChecklist() {
     [email, toast, load]
   )
 
-  /** Añade una opción de producto a un ítem existente (optimistic). */
-  const addProduct = useCallback(
-    async (item: Item, product: Product) => {
-      const updated = [...item.products, product]
+  /**
+   * Reescribe la lista de opciones de un ítem (optimistic + revierte si falla).
+   * Base común de añadir/editar/borrar opción.
+   */
+  const setProducts = useCallback(
+    async (item: Item, updated: Product[], okMsg: string, errMsg: string) => {
       const patchItem = (products: Product[]) =>
         setData((d) =>
           d
@@ -196,13 +198,38 @@ export function useChecklist() {
         if (error) throw error
       } catch {
         patchItem(item.products)
-        toast('No se pudo añadir la opción', 'error')
+        toast(errMsg, 'error')
         return false
       }
-      toast('Opción añadida')
+      toast(okMsg)
       return true
     },
     [toast]
+  )
+
+  /** Añade una opción de producto a un ítem existente. */
+  const addProduct = useCallback(
+    (item: Item, product: Product) =>
+      setProducts(item, [...item.products, product], 'Opción añadida', 'No se pudo añadir la opción'),
+    [setProducts]
+  )
+
+  /** Edita la opción en la posición `index`. */
+  const updateProduct = useCallback(
+    (item: Item, index: number, product: Product) => {
+      const updated = item.products.map((p, i) => (i === index ? product : p))
+      return setProducts(item, updated, 'Opción actualizada', 'No se pudo actualizar la opción')
+    },
+    [setProducts]
+  )
+
+  /** Borra la opción en la posición `index`. */
+  const deleteProduct = useCallback(
+    (item: Item, index: number) => {
+      const updated = item.products.filter((_, i) => i !== index)
+      return setProducts(item, updated, 'Opción eliminada', 'No se pudo eliminar la opción')
+    },
+    [setProducts]
   )
 
   const deleteItem = useCallback(
@@ -220,5 +247,15 @@ export function useChecklist() {
     [toast, load]
   )
 
-  return { data, loading, stale, toggle, addItem, addProduct, deleteItem }
+  return {
+    data,
+    loading,
+    stale,
+    toggle,
+    addItem,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    deleteItem,
+  }
 }

@@ -55,10 +55,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
       ? dateParam
       : madridTodayISO()
+  // URL pública de la app para el logo del correo. Configurable con APP_URL;
+  // si no, usa el dominio de producción. icon-192.png se sirve desde /public.
+  const appUrl = (process.env.APP_URL || 'https://pwa-babycheclist.vercel.app').replace(/\/+$/, '')
   const email = buildReminderEmail(
     eventsRes.data as CalEvent[],
     typesRes.data as EventType[],
-    today
+    today,
+    `${appUrl}/icon-192.png`
   )
 
   if (!email) {

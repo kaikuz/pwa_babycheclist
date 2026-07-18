@@ -60,7 +60,8 @@ function sectionTitle(text: string): string {
 export function buildReminderEmail(
   events: CalEvent[],
   types: EventType[],
-  todayIso: string
+  todayIso: string,
+  logoUrl = ''
 ): ReminderEmail | null {
   const typeById = new Map(types.map((t) => [t.id, t]))
   const byTime = (a: CalEvent, b: CalEvent) =>
@@ -111,18 +112,41 @@ export function buildReminderEmail(
     }
   }
 
-  const html = `
-  <div style="margin:0;padding:24px 16px;background:#f4f6f1;font-family:Karla,-apple-system,'Segoe UI',sans-serif;">
+  // Logo centrado en la cabecera. Se enlaza por URL absoluta (los correos no
+  // admiten imágenes locales ni base64 en Gmail); width/height fijos + estilos
+  // inline para que se vea igual en todos los clientes.
+  const logo = logoUrl
+    ? `<img src="${logoUrl}" width="76" height="76" alt="Camino a casa" style="width:76px;height:76px;border-radius:20px;display:inline-block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />`
+    : ''
+
+  // Documento HTML completo: viewport para móvil y color-scheme "light" para
+  // que el modo oscuro de algún cliente no invierta los colores del diseño.
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light only" />
+<meta name="supported-color-schemes" content="light" />
+<title>Camino a casa</title>
+</head>
+<body style="margin:0;padding:0;width:100%;background:#f4f6f1;-webkit-text-size-adjust:100%;">
+  <div style="margin:0;padding:24px 16px;background:#f4f6f1;font-family:Karla,-apple-system,'Segoe UI',Roboto,sans-serif;">
     <div style="max-width:520px;margin:0 auto;">
-      <div style="font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;color:#2e3a33;margin-bottom:2px;">🏡 Camino a casa</div>
-      <div style="font-size:13px;color:#6b7a70;margin-bottom:6px;">Recordatorio del calendario</div>
+      <div style="text-align:center;margin-bottom:16px;">
+        ${logo}
+        <div style="font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;color:#2e3a33;margin-top:10px;">Camino a casa</div>
+        <div style="font-size:13px;color:#6b7a70;margin-top:2px;">Recordatorio del calendario</div>
+      </div>
       ${body}
-      <div style="margin-top:18px;font-size:11px;color:#6b7a70;">
-        Correo automático diario a las 12h (11h en horario de invierno).
+      <div style="margin-top:20px;font-size:11px;line-height:1.5;color:#6b7a70;text-align:center;">
+        Correo automático diario a las 12h (11h en horario de invierno).<br />
         Los eventos se editan desde la pestaña Calendario de la app.
       </div>
     </div>
-  </div>`
+  </div>
+</body>
+</html>`
 
   const subject =
     isSunday && weekCount

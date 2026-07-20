@@ -17,7 +17,7 @@ import { addDaysISO, formatLong, parseISO } from '../src/lib/dates.js'
 export interface ReminderEmail {
   subject: string
   html: string
-  todayCount: number
+  dayCount: number
   weekCount: number
 }
 
@@ -58,8 +58,10 @@ function sectionTitle(text: string): string {
 }
 
 /**
- * Compone el correo del día: eventos de hoy y, si `todayIso` es domingo,
- * añade el resumen de la semana entrante (lunes a domingo).
+ * Compone el correo de la víspera: de lunes a sábado lista los eventos de
+ * MAÑANA (todayIso + 1), para avisar con un día de antelación. Los domingos
+ * no manda la víspera, sino el resumen de la semana entrante (lunes a
+ * domingo), que ya incluye el lunes, así que no se duplica.
  * Devuelve null si no hay nada que enviar.
  */
 export function buildReminderEmail(
@@ -72,9 +74,14 @@ export function buildReminderEmail(
   const byTime = (a: CalEvent, b: CalEvent) =>
     (a.time ?? '99').localeCompare(b.time ?? '99')
 
-  const todayEvents = events.filter((e) => eventOccursOn(e, todayIso)).sort(byTime)
-
   const isSunday = parseISO(todayIso).getDay() === 0
+
+  // Aviso de la víspera: eventos de mañana. El domingo se omite (lo cubre el
+  // resumen semanal de más abajo).
+  const dayIso = addDaysISO(todayIso, 1)
+  const dayEvents = isSunday
+    ? []
+    : events.filter((e) => eventOccursOn(e, dayIso)).sort(byTime)
   // En el resumen semanal, los recurrentes diarios (p. ej. la heparina) se
   // listan una sola vez bajo "Todos los días" en vez de repetirse 7 veces.
   const weekDays: { iso: string; events: CalEvent[] }[] = []
@@ -98,12 +105,12 @@ export function buildReminderEmail(
   const weekCount =
     weekDaily.length + weekDays.reduce((n, d) => n + d.events.length, 0)
 
-  if (todayEvents.length === 0 && weekCount === 0) return null
+  if (dayEvents.length === 0 && weekCount === 0) return null
 
   let body = ''
-  if (todayEvents.length) {
-    body += sectionTitle(`Hoy · ${cap(formatLong(todayIso))}`)
-    body += todayEvents.map((e) => eventRow(e, typeById.get(e.type_id))).join('')
+  if (dayEvents.length) {
+    body += sectionTitle(`Mañana · ${cap(formatLong(dayIso))}`)
+    body += dayEvents.map((e) => eventRow(e, typeById.get(e.type_id))).join('')
   }
   if (weekCount) {
     body += sectionTitle('La semana que viene')
@@ -137,7 +144,7 @@ export function buildReminderEmail(
     headerImages = `<div style="text-align:center;margin-bottom:16px;"><img src="${asset(WEEKLY_IMAGE_FILE)}" width="220" alt="Resumen semanal" style="width:220px;max-width:80%;height:auto;border-radius:18px;display:inline-block;border:0;" /></div>`
   } else if (baseUrl) {
     const shownTypes = types.filter((t) =>
-      todayEvents.some((e) => e.type_id === t.id)
+      dayEvents.some((e) => e.type_id === t.id)
     )
     if (shownTypes.length) {
       headerImages =
@@ -182,12 +189,9 @@ export function buildReminderEmail(
 </body>
 </html>`
 
-  const subject =
-    isSunday && weekCount
-      ? todayEvents.length
-        ? `Camino a casa — hoy (${todayEvents.length}) y tu semana`
-        : 'Camino a casa — tu semana'
-      : `Camino a casa — hoy: ${todayEvents.map((e) => e.title).join(' · ')}`
+  const subject = isSunday
+    ? 'Camino a casa — tu semana'
+    : `Camino a casa — mañana: ${dayEvents.map((e) => e.title).join(' · ')}`
 
-  return { subject, html, todayCount: todayEvents.length, weekCount }
+  return { subject, html, dayCount: dayEvents.length, weekCount }
 }

@@ -110,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sent: true,
     today,
     recipients: recipients.length,
-    todayCount: email.todayCount,
+    dayCount: email.dayCount,
     weekCount: email.weekCount,
   })
 }

@@ -96,12 +96,37 @@ function fileName(title: string): string {
   return `${slug || 'evento'}.ics`
 }
 
+/** ¿Estamos en iOS/iPadOS? (iPadOS moderno se hace pasar por Mac con táctil). */
+function isAppleMobile(): boolean {
+  const ua = navigator.userAgent
+  const iPhoneiPad = /iPad|iPhone|iPod/.test(ua)
+  const iPadOS = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1
+  return iPhoneiPad || iPadOS
+}
+
 /**
- * Descarga/abre el .ics del evento. En iOS y macOS esto abre Calendario con la
- * ficha del evento lista para añadir; en escritorio descarga el archivo.
+ * Añade el evento al calendario nativo.
+ *
+ * En iOS/iPadOS navegamos a un data-URI `text/calendar`, con lo que iOS abre
+ * directamente su tarjeta nativa "Añadir al calendario" con los datos ya
+ * puestos (un toque para añadir), sin descargar ni importar el archivo.
+ * (El compositor completo de Apple Calendar no es accesible desde una web: lo
+ * reserva iOS a apps nativas vía EventKit.)
+ *
+ * En escritorio se descarga el .ics, que Calendario/Outlook abren al pulsarlo.
  */
 export function addEventToCalendar(ev: CalEvent, type?: EventType): void {
   const ics = buildICS(ev, type)
+
+  if (isAppleMobile()) {
+    // data-URI en lugar de blob: iOS lo reconoce como evento y muestra la
+    // ficha nativa. Navegar en la propia vista abre la hoja del sistema y al
+    // cerrarla se vuelve a la app.
+    window.location.href =
+      'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics)
+    return
+  }
+
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

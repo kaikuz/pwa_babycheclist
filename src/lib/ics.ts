@@ -104,37 +104,47 @@ function isAppleMobile(): boolean {
   return iPhoneiPad || iPadOS
 }
 
+/** URL del endpoint que sirve el .ics (text/calendar) con los datos del evento. */
+export function calendarHref(ev: CalEvent, type?: EventType): string {
+  const p = new URLSearchParams()
+  p.set('id', ev.id)
+  p.set('title', ev.title)
+  p.set('start_date', ev.start_date)
+  p.set('all_day', ev.all_day ? 'true' : 'false')
+  if (ev.notes) p.set('notes', ev.notes)
+  if (ev.end_date) p.set('end_date', ev.end_date)
+  if (ev.time) p.set('time', ev.time)
+  if (ev.recurrence && ev.recurrence !== 'none') p.set('recurrence', ev.recurrence)
+  if (ev.recurrence_until) p.set('recurrence_until', ev.recurrence_until)
+  if (type) p.set('type_name', type.name)
+  return `/api/ics?${p.toString()}`
+}
+
 /**
  * Añade el evento al calendario nativo.
  *
- * En iOS/iPadOS navegamos a un data-URI `text/calendar`, con lo que iOS abre
- * directamente su tarjeta nativa "Añadir al calendario" con los datos ya
- * puestos (un toque para añadir), sin descargar ni importar el archivo.
- * (El compositor completo de Apple Calendar no es accesible desde una web: lo
- * reserva iOS a apps nativas vía EventKit.)
+ * En iOS/iPadOS navegamos al endpoint /api/ics, que responde con
+ * `Content-Type: text/calendar`. iOS lo reconoce y abre su tarjeta nativa
+ * "Añadir al calendario" con los datos ya rellenos (un toque para añadir), sin
+ * descargar ni importar nada. (El compositor completo de Apple Calendar no es
+ * accesible desde una web: iOS lo reserva a apps nativas vía EventKit.)
  *
- * En escritorio se descarga el .ics, que Calendario/Outlook abren al pulsarlo.
+ * En escritorio descargamos el .ics (mismo endpoint, mismo origen → el atributo
+ * download aplica), que Calendario/Outlook abren al pulsarlo.
  */
 export function addEventToCalendar(ev: CalEvent, type?: EventType): void {
-  const ics = buildICS(ev, type)
+  const href = calendarHref(ev, type)
 
   if (isAppleMobile()) {
-    // data-URI en lugar de blob: iOS lo reconoce como evento y muestra la
-    // ficha nativa. Navegar en la propia vista abre la hoja del sistema y al
-    // cerrarla se vuelve a la app.
-    window.location.href =
-      'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics)
+    window.location.href = href
     return
   }
 
-  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url
+  a.href = href
   a.download = fileName(ev.title)
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  setTimeout(() => URL.revokeObjectURL(url), 2000)
 }

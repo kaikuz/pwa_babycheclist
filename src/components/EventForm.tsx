@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import type { CalEvent, EventType, Recurrence } from '../lib/types'
 import { RECURRENCES, RECURRENCE_LABELS } from '../lib/types'
 import { eventColor, eventImageFile } from '../lib/events'
@@ -48,6 +49,16 @@ export function EventForm({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Bloquea el scroll de fondo mientras el formulario está abierto (evita que
+  // en iOS se cuele la cabecera de la app por detrás del modal a pantalla completa).
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
+
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (busy) return
@@ -85,7 +96,7 @@ export function EventForm({
     if (ok) onClose()
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col bg-page pt-safe">
       <header className="flex items-center justify-between border-b border-edge px-4 py-3">
         <button
@@ -299,6 +310,7 @@ export function EventForm({
           </div>
         )}
       </form>
-    </div>
+    </div>,
+    document.body
   )
 }

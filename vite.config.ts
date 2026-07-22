@@ -30,6 +30,10 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
+        // Las rutas /api/ son funciones serverless (p. ej. /api/ics devuelve
+        // text/calendar). Sin esta exclusión, el service worker les serviría el
+        // index.html de la SPA y la navegación no llegaría al endpoint real.
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/,

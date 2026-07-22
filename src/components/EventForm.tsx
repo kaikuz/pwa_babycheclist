@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import type { CalEvent, EventType, Recurrence } from '../lib/types'
 import { RECURRENCES, RECURRENCE_LABELS } from '../lib/types'
 import { eventColor, eventImageFile } from '../lib/events'
+import { addEventToCalendar } from '../lib/ics'
 import type { EventInput } from '../hooks/useEvents'
 
 interface Props {
@@ -260,14 +261,42 @@ export function EventForm({
         {error && <p className="text-sm text-honey">{error}</p>}
 
         {event && (
-          <button
-            type="button"
-            onClick={confirmDelete}
-            disabled={busy}
-            className="w-full rounded-[12px] border border-honey py-3 text-[15px] font-semibold text-honey transition-opacity disabled:opacity-40"
-          >
-            Eliminar evento
-          </button>
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() =>
+                addEventToCalendar(
+                  event,
+                  types.find((t) => t.id === event.type_id)
+                )
+              }
+              className="flex w-full items-center justify-center gap-2 rounded-[12px] border border-euca py-3 text-[15px] font-semibold text-euca transition-opacity active:opacity-70"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="3" />
+                <path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4" />
+              </svg>
+              Añadir al calendario
+            </button>
+            <button
+              type="button"
+              onClick={confirmDelete}
+              disabled={busy}
+              className="w-full rounded-[12px] border border-honey py-3 text-[15px] font-semibold text-honey transition-opacity disabled:opacity-40"
+            >
+              Eliminar evento
+            </button>
+          </div>
         )}
       </form>
     </div>

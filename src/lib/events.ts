@@ -10,6 +10,7 @@ const DARK_COLORS: Record<string, string> = {
   parto: '#E08A7E',
   cita: '#8FB59A',
   medicacion: '#D9A45B',
+  inicio_medicacion: '#B9A6DB',
   tramite: '#8C9CD6',
   otro: '#A6A6A6',
 }
@@ -25,7 +26,8 @@ export function eventColor(type: EventType | undefined, dark: boolean): string {
 const TYPE_IMAGE: Record<string, string> = {
   parto: 'parto.jpg',
   cita: 'citas_medicas.jpg',
-  medicacion: 'medicacion-vacunas.jpg',
+  medicacion: 'analisis-vacunas.PNG',
+  inicio_medicacion: 'inicio-medicacion.PNG',
   tramite: 'tramites.jpg',
   otro: 'otros.jpg',
 }

@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useChecklist } from '../hooks/useChecklist'
 import { ProgressRing } from '../components/ProgressRing'
 import { SectionBlock } from '../components/SectionBlock'
-import { AddItemForm } from '../components/AddItemForm'
+import { ItemForm, type ItemInput } from '../components/ItemForm'
+import { AddFab } from '../components/AddFab'
 import { ChecklistSkeleton } from '../components/Skeletons'
 import { ScrollTopButton } from '../components/ScrollTopButton'
 import type { Filter, Item } from '../lib/types'
@@ -21,12 +22,24 @@ export function ChecklistPage() {
     stale,
     toggle,
     addItem,
+    updateItem,
     addProduct,
     updateProduct,
     deleteProduct,
     deleteItem,
   } = useChecklist()
   const [filter, setFilter] = useState<Filter>('all')
+  /** null = cerrado; { item } = editar; {} = alta */
+  const [form, setForm] = useState<{ item?: Item } | null>(null)
+
+  const saveItem = async (input: ItemInput, existing?: Item) =>
+    existing
+      ? updateItem(existing, {
+          name: input.name,
+          section_id: input.section_id,
+          essential: input.essential,
+        })
+      : addItem(input.name, input.section_id, input.essential, input.product)
 
   const stats = useMemo(() => {
     if (!data) return null
@@ -86,7 +99,8 @@ export function ChecklistPage() {
   }
 
   return (
-    <div className="space-y-4 px-4 pb-6 pt-4">
+    // pb amplio: deja respirar el texto final por debajo del botón flotante
+    <div className="space-y-4 px-4 pb-24 pt-4">
       {stale && (
         <div className="rounded-card border border-honey bg-honey-soft px-4 py-2.5 text-center text-sm font-medium text-honey">
           Sin conexión — mostrando última versión
@@ -169,12 +183,10 @@ export function ChecklistPage() {
             onAddProduct={addProduct}
             onUpdateProduct={updateProduct}
             onDeleteProduct={deleteProduct}
-            onDelete={(i) => void deleteItem(i)}
+            onEdit={(i) => setForm({ item: i })}
           />
         )
       })}
-
-      <AddItemForm sections={data.sections} onAdd={addItem} />
 
       <div className="space-y-1 px-2 text-center text-[11px] text-soft">
         <p>
@@ -189,6 +201,17 @@ export function ChecklistPage() {
       </div>
 
       <ScrollTopButton />
+      <AddFab onClick={() => setForm({})} />
+
+      {form && (
+        <ItemForm
+          sections={data.sections}
+          item={form.item}
+          onSave={saveItem}
+          onDelete={deleteItem}
+          onClose={() => setForm(null)}
+        />
+      )}
     </div>
   )
 }

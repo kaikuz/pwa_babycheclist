@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 /**
  * Botón flotante "subir al principio" que aparece al bajar y hace scroll
  * suave hasta arriba (el mismo efecto que al pulsar un chip de sección).
- * Se coloca por encima de la tab bar inferior.
+ * Se apila sobre el botón flotante de añadir (AddFab), que va más abajo.
  */
 export function ScrollTopButton({ threshold = 500 }: { threshold?: number }) {
   const [visible, setVisible] = useState(false)
@@ -19,7 +19,7 @@ export function ScrollTopButton({ threshold = 500 }: { threshold?: number }) {
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Subir al principio"
-      className={`fixed right-4 bottom-[calc(78px+env(safe-area-inset-bottom))] z-30 flex h-11 w-11 items-center justify-center rounded-pill border border-edge bg-card text-euca shadow-card transition-all duration-200 ${
+      className={`fixed right-[26px] bottom-[calc(144px+env(safe-area-inset-bottom))] z-30 flex h-11 w-11 items-center justify-center rounded-pill border border-edge bg-card text-euca shadow-card transition-all duration-200 ${
         visible
           ? 'translate-y-0 opacity-100'
           : 'pointer-events-none translate-y-2 opacity-0'

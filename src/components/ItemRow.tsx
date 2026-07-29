@@ -11,7 +11,8 @@ interface Props {
   onAddProduct: (item: Item, product: Product) => Promise<boolean>
   onUpdateProduct: (item: Item, index: number, product: Product) => Promise<boolean>
   onDeleteProduct: (item: Item, index: number) => Promise<boolean>
-  onDelete: (item: Item) => void
+  /** abre el formulario del ítem (editar nombre/sección/categoría o eliminarlo) */
+  onEdit: (item: Item) => void
 }
 
 const miniInputCls =
@@ -95,7 +96,7 @@ export function ItemRow({
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
-  onDelete,
+  onEdit,
 }: Props) {
   const { email } = useAuth()
   const checked = check !== undefined
@@ -146,17 +147,22 @@ export function ItemRow({
           >
             {item.name}
           </p>
-          {item.is_custom && (
-            <button
-              onClick={() => {
-                if (confirm(`¿Eliminar «${item.name}»?`)) onDelete(item)
-              }}
-              aria-label={`Eliminar ${item.name}`}
-              className="shrink-0 rounded-pill px-1.5 text-lg leading-none text-soft active:text-honey"
-            >
-              ×
-            </button>
-          )}
+          {/* Editar: nombre, sección y categoría, y eliminar desde el formulario */}
+          <button
+            onClick={() => onEdit(item)}
+            aria-label={`Editar ${item.name}`}
+            className="-mt-0.5 shrink-0 rounded-pill p-1.5 text-soft active:text-euca"
+          >
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden>
+              <path
+                d="M13.5 3.5a1.77 1.77 0 0 1 2.5 2.5L7 15l-3.5 1L4.5 12.5z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
 
         <div className="mt-1 flex flex-wrap items-center gap-1.5">

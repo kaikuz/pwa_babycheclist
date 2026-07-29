@@ -173,6 +173,48 @@ export function useChecklist() {
   )
 
   /**
+   * Edita nombre, sección y/o categoría de un ítem (optimistic + revierte).
+   * Vale para cualquier ítem, también los del seed inicial.
+   */
+  const updateItem = useCallback(
+    async (
+      item: Item,
+      patch: { name: string; section_id: string; essential: boolean }
+    ) => {
+      const patchItem = (values: Partial<Item>) =>
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                items: d.items.map((i) =>
+                  i.id === item.id ? { ...i, ...values } : i
+                ),
+              }
+            : d
+        )
+      patchItem(patch)
+      try {
+        const { error } = await supabase
+          .from('items')
+          .update(patch)
+          .eq('id', item.id)
+        if (error) throw error
+      } catch {
+        patchItem({
+          name: item.name,
+          section_id: item.section_id,
+          essential: item.essential,
+        })
+        toast('No se pudo guardar el ítem', 'error')
+        return false
+      }
+      toast('Ítem actualizado')
+      return true
+    },
+    [toast]
+  )
+
+  /**
    * Reescribe la lista de opciones de un ítem (optimistic + revierte si falla).
    * Base común de añadir/editar/borrar opción.
    */
@@ -239,10 +281,11 @@ export function useChecklist() {
         if (error) throw error
       } catch {
         toast('No se pudo eliminar', 'error')
-        return
+        return false
       }
       toast('Ítem eliminado')
       await load()
+      return true
     },
     [toast, load]
   )
@@ -253,6 +296,7 @@ export function useChecklist() {
     stale,
     toggle,
     addItem,
+    updateItem,
     addProduct,
     updateProduct,
     deleteProduct,
